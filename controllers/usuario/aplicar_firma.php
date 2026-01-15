@@ -6,19 +6,18 @@ require_once __DIR__ . '/../../middlewares/headers_post.php';
 $data = json_decode(file_get_contents("php://input"), true);
 
 $usuario_id = intval($data["usuario_id"] ?? 0);
-$contrasena = $data["contrasena"] ?? null;
 
 // Validar parámetros
-if (!$usuario_id || !$contrasena) {
+if (!$usuario_id) {
     echo json_encode([
         "status" => false,
-        "message" => "Faltan datos (usuario_id o contrasena)"
+        "message" => "Faltan datos (usuario_id)"
     ]);
     exit;
 }
 
 // Buscar usuario
-$stmt = $pdo->prepare("SELECT contrasena, firma_digital 
+$stmt = $pdo->prepare("SELECT firma_digital 
                        FROM usuarios 
                        WHERE id = :id AND estado = 1");
 $stmt->execute(["id" => $usuario_id]);
@@ -28,15 +27,6 @@ if (!$usuario) {
     echo json_encode([
         "status" => false,
         "message" => "Usuario no encontrado o inactivo"
-    ]);
-    exit;
-}
-
-// Verificar contraseña
-if (!password_verify($contrasena, $usuario["contrasena"])) {
-    echo json_encode([
-        "status" => false,
-        "message" => "Contraseña incorrecta"
     ]);
     exit;
 }

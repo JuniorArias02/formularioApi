@@ -118,7 +118,7 @@ function insertarFirma($sheet, $rutaFirma, $celda)
 
     $filaHeight = $sheet->getRowDimension($row)->getRowHeight();
     if ($filaHeight <= 0) $filaHeight = 60;
-
+    
     $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
     $drawing->setPath($fullPath);
     $drawing->setCoordinates($celda);
