@@ -1,44 +1,45 @@
 Array
 (
-    [id] => 1349
-    [codigo] => EC0613
-    [nombre] => MOUSE USB
-    [dependencia] => SISTEMAS 
-    [responsable] => BULDING QUINTERO DILAN STICK
+    [codigo] => pruebas2125
+    [nombre] => pruebas2125
+    [dependencia] => MECANOTERAPIA
+    [responsable] => 
     [responsable_id] => 1379
-    [marca] => GENIUS
-    [modelo] => DX-120
-    [serial] => 34F97361406366
-    [sede_id] => 1
-    [codigo_barras] => ACT0290
+    [marca] => pruebas2125
+    [modelo] => pruebas2125
+    [serial] => pruebas2125
+    [sede_id] => 2
+    [codigo_barras] => pruebas2125
     [grupo] => EC
     [vida_util] => 60
     [vida_util_niff] => 60
-    [centro_costo] => 110007
-    [ubicacion] => SISTEMAS
-    [proveedor] => 234234
-    [fecha_compra] => 2025-12-14
-    [soporte] => 
+    [centro_costo] => 110008
+    [ubicacion] => pruebas2125
+    [proveedor] => pruebas2125
+    [fecha_compra] => 2026-01-20
+    [soporte] => pruebas2125
     [descripcion] => 
-    [estado] => NUEVO
-    [escritura] => ESCRITURAS
-    [matricula] => Matrícula
-    [valor_compra] => 25000
-    [salvamenta] => Salvamento
-    [depreciacion] => 1500
-    [depreciacion_niif] => 1500
-    [meses] => 60
-    [meses_niif] => 60
+    [estado] => BUEN ESTADO
+    [escritura] => pruebas2125
+    [matricula] => pru
+    [valor_compra] => 15
+    [salvamenta] => pruebas2125
+    [depreciacion] => 185185
+    [depreciacion_niif] => 15
+    [meses] => 12
+    [meses_niif] => 12
     [tipo_adquisicion] => 03
-    [calibrado] => 2025-12-14
-    [observaciones] => EN BUEN ESTADO
+    [calibrado] => 2026-01-20
+    [observaciones] => pruebas2125
     [tipo_bien] => mueble
-    [soporte_adjunto] => 
-    [coordinador_id] => 1456
-    [proceso_id] => 30
-    [proceso_solicitante] => 
+    [soporte_adjunto] => Array
+        (
+        )
+
+    [coordinador_id] => 1379
+    [num_factu] => pruebas2125
     [tiene_accesorio] => Si
-    [descripcion_accesorio] => descripcion Accesorios
-    [num_factu] => aefaef
+    [descripcion_accesorio] => pruebas2125
+    [proceso_id] => 37
     [creado_por] => 8
 )

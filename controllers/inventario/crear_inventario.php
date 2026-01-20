@@ -24,7 +24,7 @@ foreach ($campos as $campo) {
         exit;
     }
 }
-$data = json_decode(file_get_contents("php://input"), true);
+// $data = json_decode(file_get_contents("php://input"), true);
 file_put_contents("debug_data.log", print_r($data, true));
 
 
@@ -79,7 +79,8 @@ try {
             fecha_actualizacion = NOW(),
             tipo_bien = :tipo_bien,
             tiene_accesorio = :tiene_accesorio,
-            descripcion_accesorio = :descripcion_accesorio
+            descripcion_accesorio = :descripcion_accesorio,
+            soporte_adjunto = :soporte_adjunto
             WHERE id = :id");
 
         if (!tienePermiso($pdo, $data['creado_por'], PERMISOS['INVENTARIO']['EDITAR'])) {
@@ -101,7 +102,7 @@ try {
             "marca" => $data["marca"] ?? null,
             "modelo" => $data["modelo"] ?? null,
             "serial" => $data["serial"] ?? null,
-            "proceso_id" => $data["proceso_id"] ?? null,                                    
+            "proceso_id" => $data["proceso_id"] ?? null,
             "sede_id" => $data["sede_id"] ?? null,
             "codigo_barras" => $data["codigo_barras"] ?? null,
             "num_factu" => $data["num_factu"] ?? null,
@@ -129,6 +130,7 @@ try {
             "tipo_bien" => $data["tipo_bien"] ?? null,
             "tiene_accesorio" => $data["tiene_accesorio"] ?? null,
             "descripcion_accesorio" => $data["descripcion_accesorio"] ?? null,
+            "soporte_adjunto" => $data["soporte_adjunto"] ?? null,
             "id" => $data["id"]
         ]);
 
@@ -175,13 +177,13 @@ try {
              codigo_barras, num_factu, grupo, vida_util, vida_util_niff, centro_costo, ubicacion, proveedor,
              fecha_compra, soporte, descripcion, estado, escritura, matricula, valor_compra,
              salvamenta, depreciacion, depreciacion_niif, meses, meses_niif, tipo_adquisicion,
-             calibrado, observaciones, tipo_bien, tiene_accesorio, descripcion_accesorio)
+             calibrado, observaciones, tipo_bien, tiene_accesorio, descripcion_accesorio, soporte_adjunto)
             VALUES 
             (:codigo, :nombre, :dependencia, :responsable, :responsable_id, :coordinador_id , :marca, :modelo, :serial,:proceso_id, :sede_id, :creado_por,
              :codigo_barras, :num_factu, :grupo, :vida_util, :vida_util_niff, :centro_costo, :ubicacion, :proveedor,
              :fecha_compra, :soporte, :descripcion, :estado, :escritura, :matricula, :valor_compra,
              :salvamenta, :depreciacion, :depreciacion_niif, :meses, :meses_niif, :tipo_adquisicion,
-             :calibrado, :observaciones , :tipo_bien, :tiene_accesorio, :descripcion_accesorio)");
+             :calibrado, :observaciones , :tipo_bien, :tiene_accesorio, :descripcion_accesorio, :soporte_adjunto)");
 
 
         $valorCompra = str_replace(',', '.', $data["valor_compra"]);
@@ -235,6 +237,7 @@ try {
             "tipo_bien" => $data["tipo_bien"] ?? null,
             "tiene_accesorio" => $data["tiene_accesorio"] ?? null,
             "descripcion_accesorio" => $data["descripcion_accesorio"] ?? null,
+            "soporte_adjunto" => $data["soporte_adjunto"] ?? null,
         ]);
 
         if ($stmt->rowCount() === 0) {
@@ -251,7 +254,7 @@ try {
             $data['creado_por'],
             "Creó el inventario con código {$data['codigo']}",
             "inventario",
-            $data['id']
+            $idInsertado
         );
     }
 
@@ -266,7 +269,10 @@ try {
         "data" => $registro,
         "id" => $id,
     ]);
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(["error" => "Error al guardar el inventario: " . $e->getMessage()]);
+    echo json_encode([
+        "error" => "Error al guardar el inventario: " . $e->getMessage(),
+        "trace" => $e->getTraceAsString()
+    ]);
 }
