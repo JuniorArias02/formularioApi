@@ -5,10 +5,12 @@ require_once '../middlewares/cors.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf;  // 👈 AGREGAR ESTA LÍNEA
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+
 // --- Configuración base ---
 define("BASE_PATH", __DIR__ . "/../");
 
@@ -80,49 +82,49 @@ function getItems($pdo, $idPedido)
 // 2. --- Excel helpers ---
 function llenarEncabezado($sheet, $pedido, $extra)
 {
-    // Fecha
-    $date = ExcelDate::PHPToExcel(new DateTime($pedido['fecha']));
-    $sheet->setCellValue("E6", $date);
-    $sheet->getStyle("E6")
-        ->getNumberFormat()
-        ->setFormatCode(NumberFormat::FORMAT_DATE_DDMMYYYY);
+	// Fecha
+	$date = ExcelDate::PHPToExcel(new DateTime($pedido['fecha']));
+	$sheet->setCellValue("E6", $date);
+	$sheet->getStyle("E6")
+		->getNumberFormat()
+		->setFormatCode(NumberFormat::FORMAT_DATE_DDMMYYYY);
 
-    // Otros datos
-    $sheet->setCellValue("E7", $pedido['proceso_solicitante']);
-    $sheet->setCellValue("I6", $pedido['consecutivo']);
-    $sheet->setCellValue("I7", $pedido['sede']);
+	// Otros datos
+	$sheet->setCellValue("E7", $pedido['proceso_solicitante']);
+	$sheet->setCellValue("I6", $pedido['consecutivo']);
+	$sheet->setCellValue("I7", $pedido['sede']);
 
-    // Marcar tipo de solicitud
-    if ($pedido['tipo_solicitud'] === "Prioritaria") {
-        $sheet->setCellValue("J9", "X");
-    } elseif ($pedido['tipo_solicitud'] === "Recurrente") {
-        $sheet->setCellValue("G9", "X");
-    }
+	// Marcar tipo de solicitud
+	if ($pedido['tipo_solicitud'] === "Prioritaria") {
+		$sheet->setCellValue("J9", "X");
+	} elseif ($pedido['tipo_solicitud'] === "Recurrente") {
+		$sheet->setCellValue("G9", "X");
+	}
 
-    // === Observaciones ===
-    $obsRow  = 26 + $extra;
-    $obsCell = "B{$obsRow}";
+	// === Observaciones ===
+	$obsRow  = 26 + $extra;
+	$obsCell = "B{$obsRow}";
 
-    $sheet->getStyle($obsCell)
-        ->getAlignment()
-        ->setWrapText(true)
-        ->setVertical(Alignment::VERTICAL_TOP);
+	$sheet->getStyle($obsCell)
+		->getAlignment()
+		->setWrapText(true)
+		->setVertical(Alignment::VERTICAL_TOP);
 
-    $textoObs = !empty($sheet->getCell($obsCell)->getValue())
-        ? $sheet->getCell($obsCell)->getValue() . ' ' . $pedido['observaciones']
-        : $pedido['observaciones'];
+	$textoObs = !empty($sheet->getCell($obsCell)->getValue())
+		? $sheet->getCell($obsCell)->getValue() . ' ' . $pedido['observaciones']
+		: $pedido['observaciones'];
 
-    $sheet->setCellValue($obsCell, $textoObs);
+	$sheet->setCellValue($obsCell, $textoObs);
 
-    $anchoAprox = 50;
-    $alturaLinea = 15;
-    $lineas = ceil(strlen($textoObs) / $anchoAprox);
-    if ($lineas < 1) $lineas = 1;
+	$anchoAprox = 50;
+	$alturaLinea = 15;
+	$lineas = ceil(strlen($textoObs) / $anchoAprox);
+	if ($lineas < 1) $lineas = 1;
 
-    $altura = $lineas * $alturaLinea;
+	$altura = $lineas * $alturaLinea;
 
-    // Establecer altura calculada
-    $sheet->getRowDimension($obsRow)->setRowHeight($altura);
+	// Establecer altura calculada
+	$sheet->getRowDimension($obsRow)->setRowHeight($altura);
 }
 
 
@@ -214,6 +216,12 @@ function insertarFirmas($sheet, $pedido, $offset = 0)
 ========================================================== */
 $data = json_decode(file_get_contents("php://input"), true);
 $idPedido = isset($data['id']) ? intval($data['id']) : 0;
+$formato = isset($data['formato']) ? strtolower($data['formato']) : 'excel'; // 👈 AGREGAR ESTA LÍNEA
+
+// 👇 AGREGAR VALIDACIÓN
+if (!in_array($formato, ['excel', 'pdf'])) {
+	$formato = 'excel';
+}
 
 if ($idPedido <= 0) {
 	http_response_code(400);
@@ -274,20 +282,52 @@ llenarItems($sheet, $items);
 insertarFirmas($sheet, $pedido, $extra);
 responsableProceso($sheet, $pedido, $extra);
 
-// Exportar
+// Nombre del archivo
 $proceso = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pedido['proceso_solicitante']);
 $sede    = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pedido['sede']);
-$consecutivo    = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pedido['consecutivo']);
+$consecutivo = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pedido['consecutivo']);
 
-$filename = "PEDIDO_{$proceso}_{$sede}_{$consecutivo}.xlsx";
+/* ==========================================================
+   EXPORTAR SEGÚN FORMATO
+========================================================== */
+// 👇 REEMPLAZAR TODO DESDE AQUÍ HASTA EL exit;
 
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="' . $filename . '"');
-header('Access-Control-Expose-Headers: Content-Disposition');
+if ($formato === 'pdf') {
+	// ===== GENERAR PDF =====
+	\PhpOffice\PhpSpreadsheet\IOFactory::registerWriter('Pdf', \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf::class);
+	
+	// Configurar orientación y tamaño de página
+	$sheet->getPageSetup()
+		->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
+		->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LETTER);
+	
+	// Ajustar márgenes
+	$sheet->getPageMargins()
+		->setTop(0.5)
+		->setRight(0.5)
+		->setLeft(0.5)
+		->setBottom(0.5);
+	
+	$filename = "PEDIDO_{$proceso}_{$sede}_{$consecutivo}.pdf";
+	
+	header('Content-Type: application/pdf');
+	header('Content-Disposition: attachment;filename="' . $filename . '"');
+	header('Access-Control-Expose-Headers: Content-Disposition');
+	header('Cache-Control: max-age=0');
+	
+	$writer = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
+	$writer->save("php://output");
+} else {
+	// ===== GENERAR EXCEL =====
+	$filename = "PEDIDO_{$proceso}_{$sede}_{$consecutivo}.xlsx";
+	
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header('Content-Disposition: attachment;filename="' . $filename . '"');
+	header('Access-Control-Expose-Headers: Content-Disposition');
+	header('Cache-Control: max-age=0');
+	
+	$writer = new Xlsx($spreadsheet);
+	$writer->save("php://output");
+}
 
-header('Cache-Control: max-age=0');
-
-
-$writer = new Xlsx($spreadsheet);
-$writer->save("php://output");
 exit;

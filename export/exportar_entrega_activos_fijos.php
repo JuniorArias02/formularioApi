@@ -5,19 +5,26 @@ require_once '../database/conexion.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
+// ======================= PARÁMETROS =======================
+$idEntrega = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+$formato = strtolower($_GET['formato'] ?? $_POST['formato'] ?? 'excel'); // 'excel' o 'pdf'
+
+if ($idEntrega <= 0) {
+	die("ID de entrega inválido");
+}
+
+// Validar formato
+if (!in_array($formato, ['excel', 'pdf'])) {
+	$formato = 'excel';
+}
 
 // ======================= CARGAR PLANTILLA =======================
 $templatePath = __DIR__ . "/../public/plantilla_entrega_activos_fijos.xlsx";
 $spreadsheet = IOFactory::load($templatePath);
 $sheet = $spreadsheet->getActiveSheet();
-
-// ======================= ID ENTREGA =======================
-$idEntrega = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
-
-if ($idEntrega <= 0) {
-	die("ID de entrega inválido");
-}
 
 // ======================= CONSULTA ENTREGA =======================
 $sqlEntrega = "SELECT 
@@ -131,16 +138,44 @@ foreach ($items as $i => $item) {
 		->setVertical(Alignment::VERTICAL_CENTER);
 }
 
+// ======================= GENERAR ARCHIVO SEGÚN FORMATO =======================
+if ($formato === 'pdf') {
+	// Configurar para PDF
+	// Asegúrate de tener instalado: composer require mpdf/mpdf
+	\PhpOffice\PhpSpreadsheet\IOFactory::registerWriter('Pdf', \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf::class);
+	
+	// Configurar orientación y tamaño de página
+	$sheet->getPageSetup()
+		->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
+		->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LETTER);
+	
+	// Ajustar márgenes
+	$sheet->getPageMargins()
+		->setTop(0.5)
+		->setRight(0.5)
+		->setLeft(0.5)
+		->setBottom(0.5);
+	
+	// Configurar área de impresión si es necesario
+	// $sheet->getPageSetup()->setPrintArea('A1:U30');
+	
+	header('Content-Type: application/pdf');
+	header('Content-Disposition: attachment;filename="entrega_activos_fijos.pdf"');
+	header('Cache-Control: max-age=0');
+	
+	$writer = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
+	$writer->save("php://output");
+} else {
+	// Generar Excel (comportamiento original)
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header('Content-Disposition: attachment;filename="entrega_activos_fijos.xlsx"');
+	header('Cache-Control: max-age=0');
+	
+	$writer = new Xlsx($spreadsheet);
+	$writer->save("php://output");
+}
 
-// ======================= DESCARGAR EXCEL =======================
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="entrega_activos_fijos.xlsx"');
-header('Cache-Control: max-age=0');
-
-$writer = new Xlsx($spreadsheet);
-$writer->save("php://output");
 exit;
-
 
 // ======================= FIRMA =======================
 function insertarFirma($sheet, $rutaFirma, $celda, $offsetX = 250, $offsetY = 15)
