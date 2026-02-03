@@ -10,20 +10,36 @@ date_default_timezone_set('America/Bogota');
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Validar campos obligatorios
-$campos = ['codigo', 'nombre', 'creado_por'];
+$camposObligatorios = [
+    'codigo' => 'Código de inventario',
+    'nombre' => 'Nombre del activo',
+    'serial' => 'Serial de inventario',
+    'responsable_id' => 'Responsable',
+    'coordinador_id' => 'Coordinador',
+    'sede_id' => 'Sede',
+    'proceso_id' => 'Proceso',
+    'creado_por' => 'Usuario creador'
+];
 
-foreach ($campos as $campo) {
-    if (!isset($data[$campo])) {
-        http_response_code(400);
-        echo json_encode(["error" => "El campo '$campo' es obligatorio."]);
-        exit;
-    }
-    if (trim($data[$campo]) === '') {
-        http_response_code(400);
-        echo json_encode(["error" => "El campo '$campo' no puede estar vacío."]);
-        exit;
+$camposFaltantes = [];
+
+foreach ($camposObligatorios as $campo => $nombreCampo) {
+    if (!isset($data[$campo]) || trim($data[$campo]) === '') {
+        $camposFaltantes[] = $nombreCampo;
     }
 }
+
+if (!empty($camposFaltantes)) {
+    http_response_code(400);
+    echo json_encode([
+        "success" => false,
+        "error" => "Campos obligatorios faltantes",
+        "message" => "Los siguientes campos son obligatorios: " . implode(', ', $camposFaltantes),
+        "campos_faltantes" => $camposFaltantes
+    ]);
+    exit;
+}
+
 // $data = json_decode(file_get_contents("php://input"), true);
 file_put_contents("debug_data.log", print_r($data, true));
 

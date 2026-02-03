@@ -1,45 +1,39 @@
 Array
 (
-    [codigo] => pruebas2125
-    [nombre] => pruebas2125
-    [dependencia] => MECANOTERAPIA
+    [codigo] => hgjmjtrtu
+    [nombre] => BALANCIN PROSTRECHT
+    [dependencia] => 
     [responsable] => 
     [responsable_id] => 1379
-    [marca] => pruebas2125
-    [modelo] => pruebas2125
-    [serial] => pruebas2125
-    [sede_id] => 2
-    [codigo_barras] => pruebas2125
-    [grupo] => EC
-    [vida_util] => 60
-    [vida_util_niff] => 60
-    [centro_costo] => 110008
-    [ubicacion] => pruebas2125
-    [proveedor] => pruebas2125
-    [fecha_compra] => 2026-01-20
-    [soporte] => pruebas2125
+    [marca] => yu
+    [modelo] => aefae
+    [serial] => 
+    [sede_id] => 1
+    [codigo_barras] => ACT0540
+    [grupo] => 
+    [vida_util] => 
+    [vida_util_niff] => 
+    [centro_costo] => 
+    [ubicacion] => 
+    [proveedor] => 
+    [fecha_compra] => 
+    [soporte] => 
     [descripcion] => 
-    [estado] => BUEN ESTADO
-    [escritura] => pruebas2125
-    [matricula] => pru
-    [valor_compra] => 15
-    [salvamenta] => pruebas2125
-    [depreciacion] => 185185
-    [depreciacion_niif] => 15
-    [meses] => 12
-    [meses_niif] => 12
-    [tipo_adquisicion] => 03
-    [calibrado] => 2026-01-20
-    [observaciones] => pruebas2125
-    [tipo_bien] => mueble
-    [soporte_adjunto] => Array
-        (
-        )
-
+    [estado] => 
+    [escritura] => 
+    [matricula] => 
+    [valor_compra] => 
+    [salvamenta] => 
+    [depreciacion] => 
+    [depreciacion_niif] => 
+    [meses] => 
+    [meses_niif] => 
+    [tipo_adquisicion] => 
+    [calibrado] => 
+    [observaciones] => 
+    [tipo_bien] => 
+    [soporte_adjunto] => 
     [coordinador_id] => 1379
-    [num_factu] => pruebas2125
-    [tiene_accesorio] => Si
-    [descripcion_accesorio] => pruebas2125
-    [proceso_id] => 37
+    [proceso_id] => 3
     [creado_por] => 8
 )
